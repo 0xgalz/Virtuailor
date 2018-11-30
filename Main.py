@@ -32,9 +32,7 @@ def add_bp_to_virtual_calls():
         if cur_addr == idc.BADADDR:
             break
         elif idc.GetMnem(cur_addr) == 'call':
-            print "Its a call! ", idc.GetOpnd(cur_addr, 0)
             if idc.GetOpnd(cur_addr, 0) in REGISTERS:
-                print cur_addr, "enter write BP!"
                 cond, bp_address = vtableAddress.write_vtable2file(cur_addr)
                 if cond != '':
                     bp_vtable = AddBP.add(bp_address, cond)

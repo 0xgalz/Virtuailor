@@ -1,6 +1,7 @@
 import idc
 import idautils
 import idaapi
+import sys, os
 idaapi.require("AddBP")
 
 
@@ -30,18 +31,20 @@ def get_con2_var_or_num(i_cnt, cur_addr):
                 register = opnd2[opnd2.find('[') + 1: opnd2.find(']')]
                 return register, offset, cur_addr
         cur_addr = idc.PrevHead(cur_addr)
-    return "out of the function", -1, cur_addr
+    return "out of the function", "-1", cur_addr
 
     return '', 0
 
 
 def get_bp_condition(start_addr, register_vtable, offset):
-    with open('BPCond.py', 'rb') as f1:
+    condition_file = str(os.path.dirname(os.path.abspath(sys.argv[0]))+'\\BPCond.py')
+    with open(condition_file, 'rb') as f1:
         bp_cond_text = f1.read()
-    bp_cond_text.replace("<<<start_addr>>>", start_addr)
-    bp_cond_text.replace("<<<register_vtable>>>", register_vtable)
-    bp_cond_text.replace("<<<offset>>>", offset)
+    bp_cond_text = bp_cond_text.replace("<<<start_addr>>>", str(start_addr))
+    bp_cond_text = bp_cond_text.replace("<<<register_vtable>>>", register_vtable)
+    bp_cond_text = bp_cond_text.replace("<<<offset>>>", offset)
     return bp_cond_text
+
 
 
 def write_vtable2file(start_addr):
