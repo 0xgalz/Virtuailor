@@ -16,7 +16,7 @@ class AddBreakPoint:
         self.elang = elang
 
     def set(self, break_p=False):
-        print "breakpoint on %08x" % self.address
+        #print "breakpoint on %08x" % self.address
         idaapi.add_bpt(self.address, 0, idc.BPT_SOFT)
         idaapi.enable_bpt(self.address, True)
         #idc.SetBptCnd(self.address, self.condition.get_text())
@@ -25,9 +25,6 @@ class AddBreakPoint:
         bpt.elang = self.elang
         bpt.condition = self.condition.get_text()
         idaapi.update_bpt(bpt)
-        print bpt.condition
-        #idc.SetBptCnd(11348570, "print '3'")
-
 
     def delete(self):
         idaapi.del_bpt(self.address)
@@ -52,16 +49,10 @@ class Condition:
     def __set_start_text(self):
         if self.type == 0:
             self.text = """auto addr = get_screen_ea();
-            auto f = fopen("C:\\ida_res\\try.txt", "a");\
-            fprintf(f, "%d,",DbgDword(esp+4));\
-            fprintf(f, "%08x,",Dword(Dword(esp)));\
-            fclose(f);\
             "gal" == "IDA";\
             """
         if self.type == 2:
             self.text = """get_reg_value("eax");
-            add_bpt(0x013f2741);
-
             """
         elif self.type == 1:
             self.text = """
