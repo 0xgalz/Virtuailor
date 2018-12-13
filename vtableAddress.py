@@ -4,6 +4,16 @@ import idaapi
 import sys, os
 idaapi.require("AddBP")
 
+REGISTERS = ['eax', 'ebx', 'ecx', 'edx', 'rax', 'rbx', 'rcx', 'rdx', 'r9', 'r10', 'r8']
+
+def get_processor_architecture():
+    info = idaapi.get_inf_structure()
+    if info.is_64bit():
+        return "64"
+    elif info.is_32bit():
+        return ""
+    else:
+        return "Error"
 
 def get_con2_var_or_num(i_cnt, cur_addr):
     """
@@ -37,13 +47,17 @@ def get_con2_var_or_num(i_cnt, cur_addr):
 
 
 def get_bp_condition(start_addr, register_vtable, offset):
-    condition_file = str(os.path.dirname(os.path.abspath(sys.argv[0]))+'\\BPCond.py')
-    with open(condition_file, 'rb') as f1:
-        bp_cond_text = f1.read()
-    bp_cond_text = bp_cond_text.replace("<<<start_addr>>>", str(start_addr))
-    bp_cond_text = bp_cond_text.replace("<<<register_vtable>>>", register_vtable)
-    bp_cond_text = bp_cond_text.replace("<<<offset>>>", offset)
-    return bp_cond_text
+    arch = get_processor_architecture()
+    if arch != "Error":
+        file_name = '\\BPCond' + arch + '.py'
+        condition_file = str(os.path.dirname(os.path.abspath(sys.argv[0])) + file_name)
+        with open(condition_file, 'rb') as f1:
+            bp_cond_text = f1.read()
+        bp_cond_text = bp_cond_text.replace("<<<start_addr>>>", str(start_addr))
+        bp_cond_text = bp_cond_text.replace("<<<register_vtable>>>", register_vtable)
+        bp_cond_text = bp_cond_text.replace("<<<offset>>>", offset)
+        return bp_cond_text
+    return "# Error in BP condition"
 
 
 
@@ -52,7 +66,15 @@ def write_vtable2file(start_addr):
      :param start_addr: The start address of the virtual call
     :return: The break point condition and the break point address
     """
-    opnd = get_con2_var_or_num(idc.GetOpnd(start_addr, 0), start_addr)
+    raw_opnd = idc.GetOpnd(start_addr, 0)
+    if raw_opnd in REGISTERS:
+        reg = raw_opnd
+    else:
+        for reg in REGISTERS:
+            if raw_opnd.find(reg) != -1:
+                break
+    print reg
+    opnd = get_con2_var_or_num(reg, start_addr)
 
     reg_vtable = opnd[0]
     offset = opnd[1]
@@ -61,12 +83,19 @@ def write_vtable2file(start_addr):
     cond = ""
 
     try:
-        int(offset)
-        # If a structure was already assigned to the BP (not by Virtualor), before running the code the code will\
+        #TODO If a structure was already assigned to the BP (not by Virtualor), before running the code the code will\
         # assume it was examined by the user, the BP will not be set
-        cond =  ""
+        plus_indx = raw_opnd.find('+')
+        if plus_indx != -1:
+            call_offset = raw_opnd[plus_indx + 1:raw_opnd.find(']')]
+            # if the offset is in hex
+            if call_offset.find('h') != -1:
+                call_offset = int(call_offset[:call_offset.find('h')], 16)
+        if offset.find('h') != -1:
+            offset = str(int(offset[:offset.find('h')], 16))
+            #offset = str(int(offset) + int(call_offset))
     except ValueError:
-        if offset[:9] == "vtable_0x":
+        #if offset[:9] == "vtable_0x":
         # A offset structure was set, the old offset will be deleted
             set_bp = False
     finally:
