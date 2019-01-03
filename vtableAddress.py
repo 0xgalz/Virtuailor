@@ -1,5 +1,7 @@
 import idc
 import idautils
+import ida_frame
+import ida_struct
 import idaapi
 import sys, os
 idaapi.require("AddBP")
@@ -14,6 +16,15 @@ def get_processor_architecture():
         return ""
     else:
         return "Error"
+
+
+def get_local_var_value_64(loc_var_name):
+    frame = ida_frame.get_frame(idc.here())
+    loc_var = ida_struct.get_member_by_name(frame, loc_var_name)
+    loc_var_start = loc_var.soff
+    loc_var_ea = loc_var_start + idc.GetRegValue("RSP")
+    loc_var_value = idc.read_dbg_qword(loc_var_ea) # in case the variable is 32bit, just use get_wide_dword() instead
+    return loc_var_value
 
 def get_con2_var_or_num(i_cnt, cur_addr):
     """
@@ -40,6 +51,9 @@ def get_con2_var_or_num(i_cnt, cur_addr):
                 offset = "0"
                 register = opnd2[opnd2.find('[') + 1: opnd2.find(']')]
                 return register, offset, cur_addr
+        elif idc.GetMnem(cur_addr)[:4] == "call":
+            print "ERROR at address", start_addr, ": the vtable pointer was assigned outside of function, could not place BP"
+            cur_addr = start_addr
         cur_addr = idc.PrevHead(cur_addr)
     return "out of the function", "-1", cur_addr
 
@@ -81,7 +95,7 @@ def write_vtable2file(start_addr):
     bp_address = opnd[2]
     set_bp = True
     cond = ""
-
+    # TODO check the get_con2 return variables!!@
     try:
         #TODO If a structure was already assigned to the BP (not by Virtualor), before running the code the code will\
         # assume it was examined by the user, the BP will not be set

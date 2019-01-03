@@ -6,13 +6,28 @@
 #    * offset -> The offset of the relevant function from the vtable base pointer
 #import idaapi
 
-#try:
 virtual_call_addr = str(<<<start_addr>>>)  #idc.NextHead(idc.here())
 
+# check if we want the register or the regidter value
+is_brac = idc.GetOpnd(here(), 1).find('[')
+
 # Get the adresses of the  vtable and the virtual function from the relevant register:
-p_vtable_addr = idc.GetRegValue("<<<register_vtable>>>")
-pv_func_addr = idc.GetRegValue("<<<register_vtable>>>") + <<<offset>>>
-v_func_addr = get_wide_dword(pv_func_addr)
+if is_brac == -1:
+    p_vtable_addr = idc.GetRegValue("<<<register_vtable>>>")
+    pv_func_addr = p_vtable_addr + <<<offset>>>
+    v_func_addr = get_wide_dword(pv_func_addr)
+    print "no", v_func_addr
+
+else:
+    p_vtable_addr = get_wide_dword(idc.GetRegValue("<<<register_vtable>>>"))
+    pv_func_addr = p_vtable_addr + <<<offset>>>
+    v_func_addr = get_wide_dword(pv_func_addr)
+    print "brac!!", v_func_addr
+
+# Get the adresses of the  vtable and the virtual function from the relevant register:
+#p_vtable_addr = idc.GetRegValue("<<<register_vtable>>>")
+#pv_func_addr = idc.GetRegValue("<<<register_vtable>>>") + <<<offset>>>
+#v_func_addr = get_wide_dword(pv_func_addr)
 
 # calculate the offset of the virtual function from the beginning of its section, determine its name
 # in case the function name was changed by the user the name will stay the same

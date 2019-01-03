@@ -6,18 +6,27 @@
 #    * offset -> The offset of the relevant function from the vtable base pointer
 #import idaapi
 
-#try:
 virtual_call_addr = str(<<<start_addr>>>)  #idc.NextHead(idc.here())
 
+# check if we want the register or the regidter value
+
+is_brac = idc.GetOpnd(here(), 1).find('[')
+
 # Get the adresses of the  vtable and the virtual function from the relevant register:
-p_vtable_addr = idc.GetRegValue("<<<register_vtable>>>")
-pv_func_addr = idc.GetRegValue("<<<register_vtable>>>") + <<<offset>>>
-v_func_addr = idc.read_dbg_qword(pv_func_addr)
-print v_func_addr
+if is_brac == -1:
+    p_vtable_addr = idc.GetRegValue("<<<register_vtable>>>")
+    pv_func_addr = p_vtable_addr + <<<offset>>>
+    v_func_addr = idc.read_dbg_qword(pv_func_addr)
+    print "no", v_func_addr
+
+else:
+    p_vtable_addr = idc.read_dbg_qword(idc.GetRegValue("<<<register_vtable>>>"))
+    pv_func_addr = p_vtable_addr + <<<offset>>>
+    v_func_addr = idc.read_dbg_qword(pv_func_addr)
+    print "brac!!", v_func_addr
 # calculate the offset of the virtual function from the beginning of its section, determine its name
 # in case the function name was changed by the user the name will stay the same
 v_func_name = GetFunctionName(v_func_addr)
-print v_func_name
 calc_func_name = int(v_func_addr) - SegStart(v_func_addr)
 if v_func_name[:4] == "sub_":
     v_func_name =  "vfunc_" + str(calc_func_name) #str(v_func_name)[4:] # str(hex(v_func_addr- SegStart(v_func_addr))) the name will be the offset from the beginning of the segment
@@ -51,9 +60,12 @@ if struct_id != idc.BADADDR: # checks if the struct creation succeeded
             idaapi.set_name(vtable_func_value, v_func_name, idaapi.SN_FORCE)
         succ = idc.add_struc_member(struct_id, v_func_name, vtable_func_offset , FF_QWRD, -1, 8)
         vtable_func_offset += 8
-        vtable_func_value = read_dbg_qword(p_vtable_addr + vtable_func_offset)
+        vtable_func_value = idc.read_dbg_qword(p_vtable_addr + vtable_func_offset)
 
-        #succ1 = idc.SetMemberComment(struct_id, vtable_func_offset, "Was called form address: <<<start_addr>>>", 1) #str(hex(idc.GetRegValue("eip")))
+        # add comment to the vtable struct members
+        #cur_cmt = idc.GetMemberComment(struct_id, vtable_func_offset, 1)
+        #succ1 = idc.SetMemberComment(struct_id, vtable_func_offset, "Was called from address: <<<start_addr>>>", 1) #str(hex(idc.GetRegValue("eip")))
+
     idc.OpStroff(idautils.DecodeInstruction(int(idc.GetRegValue("rip"))), 1, struct_id)
 else:
     struct_id = idc.GetStrucIdByName(struct_name)
