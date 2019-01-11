@@ -38,10 +38,7 @@ class Condition:
         :return: a condition for bp
         """
         self.__enum_type = {0: "get_return_address", 7: "debug"}
-        if type in self.__enum_type.keys():
-            self.type = type
-        else:
-            self.type = 3
+        self.type = type if type in self.__enum_type.keys() else 3
         self.name = self.__enum_type[self.type]
         self.text = cond_text
         self.__set_start_text()

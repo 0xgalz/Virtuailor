@@ -52,8 +52,10 @@ def get_con2_var_or_num(i_cnt, cur_addr):
                 register = opnd2[opnd2.find('[') + 1: opnd2.find(']')]
                 return register, offset, cur_addr
         elif idc.GetMnem(cur_addr)[:4] == "call":
-            print "ERROR at address", start_addr, ": the vtable pointer was assigned outside of function, could not place BP"
-            cur_addr = start_addr
+            # In case the code has CFG -> ignores the function call before the virtual calls
+            if idc.GetOpnd(cur_addr, 0) != "cs:__guard_check_icall_fptr":
+                print "ERROR at address", start_addr, ": the vtable pointer was assigned outside of function, could not place BP"
+                cur_addr = start_addr
         cur_addr = idc.PrevHead(cur_addr)
     return "out of the function", "-1", cur_addr
 
@@ -114,5 +116,6 @@ def write_vtable2file(start_addr):
             set_bp = False
     finally:
         if set_bp:
+            start_addr = start_addr - idc.SegStart(start_addr)
             cond = get_bp_condition(start_addr, reg_vtable, offset)
     return cond, bp_address
