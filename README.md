@@ -1,5 +1,6 @@
 # Virtuailor - IDAPython tool for C++ vtables reconstruction 
 
+
 Virtuailor is an IDAPython tool that reconstructs vtables for C++ code written for intel architechture and both 32bit and 64bit code.
 The tool constructed from 2 parts, static and dynamic.
 
@@ -17,6 +18,7 @@ The second is the dynamic part, contains the following capabilities:
 
 1. By default Virtuailor will look for virtual calls in ALL the addresses in the code.
 If you want to limit the code only for specific address range, no problem, just edit the *Main* file to add the range you want to target in the variables start_addr_range and end_addr_range:
+
 `if __name__ == '__main__':
     start_addr_range = idc.MinEA()  # You can change the virtual calls address range
     end_addr_range = idc.MaxEA()
