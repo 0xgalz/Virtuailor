@@ -49,7 +49,10 @@ def get_con2_var_or_num(i_cnt, cur_addr):
                 return register, offset, cur_addr
             else:
                 offset = "0"
-                register = opnd2[opnd2.find('[') + 1: opnd2.find(']')]
+                if opnd2.find(']') != -1:
+                    register = opnd2[opnd2.find('[') + 1: opnd2.find(']')]
+                else:
+                    register = opnd2
                 return register, offset, cur_addr
         elif idc.GetMnem(cur_addr)[:4] == "call":
             # In case the code has CFG -> ignores the function call before the virtual calls
@@ -89,7 +92,6 @@ def write_vtable2file(start_addr):
         for reg in REGISTERS:
             if raw_opnd.find(reg) != -1:
                 break
-    print reg
     opnd = get_con2_var_or_num(reg, start_addr)
 
     reg_vtable = opnd[0]
@@ -109,13 +111,12 @@ def write_vtable2file(start_addr):
                 call_offset = int(call_offset[:call_offset.find('h')], 16)
         if offset.find('h') != -1:
             offset = str(int(offset[:offset.find('h')], 16))
-            #offset = str(int(offset) + int(call_offset))
     except ValueError:
-        #if offset[:9] == "vtable_0x":
         # A offset structure was set, the old offset will be deleted
-            set_bp = False
+        set_bp = False
     finally:
         if set_bp:
             start_addr = start_addr - idc.SegStart(start_addr)
-            cond = get_bp_condition(start_addr, reg_vtable, offset)
+            if reg_vtable in REGISTERS:
+                cond = get_bp_condition(start_addr, reg_vtable, offset)
     return cond, bp_address

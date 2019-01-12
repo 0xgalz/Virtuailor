@@ -2,11 +2,9 @@ import idc
 import idautils
 import idaapi
 
-
 idaapi.require("AddBP")
 idaapi.require("vtableAddress")
 
-REGISTERS = ['eax', 'ebx', 'ecx', 'edx', 'rax', 'rbx', 'rcx', 'rdx', 'r9', 'r10', 'r8']
 
 def get_all_functions():
     for func in idautils.Functions():
@@ -24,19 +22,20 @@ def get_xref_code_to_func(func_addr):
     return addr
 
 
-def add_bp_to_virtual_calls():
-    cur_addr = MinEA()
-    end = MaxEA()
-    all_addrs = []
+def add_bp_to_virtual_calls(cur_addr, end):
     while cur_addr < end:
         if cur_addr == idc.BADADDR:
             break
         elif idc.GetMnem(cur_addr) == 'call':
-            if True in [idc.GetOpnd(cur_addr, 0).find(reg) != -1 for reg in REGISTERS]: #idc.GetOpnd(cur_addr, 0) in REGISTERS:
+            if True in [idc.GetOpnd(cur_addr, 0).find(reg) != -1 for reg in
+                        REGISTERS]:  # idc.GetOpnd(cur_addr, 0) in REGISTERS:
                 cond, bp_address = vtableAddress.write_vtable2file(cur_addr)
                 if cond != '':
                     bp_vtable = AddBP.add(bp_address, cond)
         cur_addr = idc.NextHead(cur_addr)
 
 
-add_bp_to_virtual_calls()
+if __name__ == '__main__':
+    start_addr_range = idc.MinEA()  # You can change the virtual calls address range
+    end_addr_range = idc.MaxEA()
+    add_bp_to_virtual_calls(start_addr_range, end_addr_range)
