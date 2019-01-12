@@ -19,10 +19,13 @@ The second is the dynamic part, contains the following capabilities:
 1. By default Virtuailor will look for virtual calls in ALL the addresses in the code.
 If you want to limit the code only for specific address range, no problem, just edit the *Main* file to add the range you want to target in the variables start_addr_range and end_addr_range:
 
-`if __name__ == '__main__':
+```python
+if __name__ == '__main__':
+
     start_addr_range = idc.MinEA()  # You can change the virtual calls address range
     end_addr_range = idc.MaxEA()
-    add_bp_to_virtual_calls(start_addr_range, end_addr_range)`
+    add_bp_to_virtual_calls(start_addr_range, end_addr_range)
+```
 
 2. Optional, (but extremely recommended), create a snapshot of your idb. Just press ctrl+shift+t and create a snapshot.
 
