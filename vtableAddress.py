@@ -57,7 +57,7 @@ def get_con2_var_or_num(i_cnt, cur_addr):
         elif idc.GetMnem(cur_addr)[:4] == "call":
             # In case the code has CFG -> ignores the function call before the virtual calls
             if idc.GetOpnd(cur_addr, 0) != "cs:__guard_check_icall_fptr":
-                print "ERROR at address", start_addr, ": the vtable pointer was assigned outside of function, could not place BP"
+                print "ERROR at address 0x%08x: the vtable pointer was assigned outside of function, could not place BP" % start_addr
                 cur_addr = start_addr
         cur_addr = idc.PrevHead(cur_addr)
     return "out of the function", "-1", cur_addr
@@ -68,8 +68,8 @@ def get_con2_var_or_num(i_cnt, cur_addr):
 def get_bp_condition(start_addr, register_vtable, offset):
     arch = get_processor_architecture()
     if arch != "Error":
-        file_name = '\\BPCond' + arch + '.py'
-        condition_file = str(os.path.dirname(os.path.abspath(sys.argv[0])) + file_name)
+        file_name = 'BPCond' + arch + '.py'
+        condition_file = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), file_name)
         with open(condition_file, 'rb') as f1:
             bp_cond_text = f1.read()
         bp_cond_text = bp_cond_text.replace("<<<start_addr>>>", str(start_addr))

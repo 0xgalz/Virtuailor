@@ -63,7 +63,7 @@ def add_all_functions_to_struct(start_address, struct_id, p_vtable_addr, offset)
             vtable_func_value = get_wide_dword(vtable_func_value)
             v_func_name = GetFunctionName(vtable_func_value)
             if v_func_name == '':
-                print "Error in adding functions to struct, at BP address::", start_address
+                print "Error in adding functions to struct, at BP address::0x%08x" % start_address
         # Change function name
         v_func_name = get_fixed_name_for_object(int(vtable_func_value), "vfunc_")
         idaapi.set_name(vtable_func_value, v_func_name, idaapi.SN_FORCE)
@@ -118,6 +118,6 @@ offset = <<<offset>>>
 try:
     do_logic(virtual_call_addr, register_vtable, offset)
 except:
-    print "Error! at BP address:", hex(idc.GetRegValue("eip"))
+    print "Error! at BP address: 0x%08x", idc.GetRegValue("eip")
 
 #idc.add_cref(0x000000013FA72ABB, 0x000000013FA71177, idc.XREF_USER | idc.fl_F)
