@@ -75,6 +75,11 @@ The following gif shows the added Xrefs with their indirect function call:
 The tool was presented in RECon brussels, Troopers and Warcon. 
 The presentaion could be found in the following link: https://www.youtube.com/watch?v=Xk75TM7NmtA
 
+## Thanks
+
+REcon Brussels, Troopers, Warcon crews, Nana, @tmr232, @matalaz, @oryandp, @talkain, @shiftreduce
+
+
 ## License
 
 The plugin is licensed under the GNU GPL v3 license.
