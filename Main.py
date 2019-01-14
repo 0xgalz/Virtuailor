@@ -5,6 +5,7 @@ import idaapi
 idaapi.require("AddBP")
 idaapi.require("vtableAddress")
 
+from vtableAddress import REGISTERS
 
 def get_all_functions():
     for func in idautils.Functions():
