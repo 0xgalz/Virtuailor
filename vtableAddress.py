@@ -1,3 +1,4 @@
+from __future__ import print_function
 import idc
 import idautils
 import ida_frame
@@ -57,7 +58,7 @@ def get_con2_var_or_num(i_cnt, cur_addr):
         elif idc.GetMnem(cur_addr)[:4] == "call":
             # In case the code has CFG -> ignores the function call before the virtual calls
             if idc.GetOpnd(cur_addr, 0) != "cs:__guard_check_icall_fptr":
-                print "ERROR at address 0x%08x: the vtable pointer was assigned outside of function, could not place BP" % start_addr
+                print("ERROR at address 0x%08x: the vtable pointer was assigned outside of function, could not place BP" % start_addr)
                 cur_addr = start_addr
         cur_addr = idc.PrevHead(cur_addr)
     return "out of the function", "-1", cur_addr

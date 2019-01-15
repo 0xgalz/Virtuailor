@@ -5,6 +5,8 @@
 #    * register_vtable -> The register who points to the vtable
 #    * offset -> The offset of the relevant function from the vtable base pointer
 
+from __future__ import print_function
+
 def get_fixed_name_for_object(address, prefix=""):
     """
     :param address: string, the object's address we want to calculate its offset
@@ -63,7 +65,7 @@ def add_all_functions_to_struct(start_address, struct_id, p_vtable_addr, offset)
             vtable_func_value = get_wide_dword(vtable_func_value)
             v_func_name = GetFunctionName(vtable_func_value)
             if v_func_name == '':
-                print "Error in adding functions to struct, at BP address::0x%08x" % start_address
+                print("Error in adding functions to struct, at BP address::0x%08x" % start_address)
         # Change function name
         v_func_name = get_fixed_name_for_object(int(vtable_func_value), "vfunc_")
         idaapi.set_name(vtable_func_value, v_func_name, idaapi.SN_FORCE)
@@ -87,7 +89,7 @@ def create_vtable_struct(start_address, vtable_name, p_vtable_addr, offset):
         if struct_id != idc.BADADDR:
             idc.OpStroff(idautils.DecodeInstruction(int(idc.GetRegValue("eip"))), 1, struct_id)
         else:
-            print "Failed to create struct: " +  struct_name
+            print("Failed to create struct: " +  struct_name)
 
 def do_logic(virtual_call_addr, register_vtable, offset):
     # Checks if the assignment was beRef or byVal
@@ -112,12 +114,12 @@ def do_logic(virtual_call_addr, register_vtable, offset):
     create_vtable_struct(virtual_call_addr, vtable_name, p_vtable_addr, offset)
 
 virtual_call_addr = str(<<<start_addr>>>)  # Offset from the beginning of its segment
-#print "start_addr:", virtual_call_addr
+#print("start_addr:", virtual_call_addr)
 register_vtable = "<<<register_vtable>>>"
 offset = <<<offset>>>
 try:
     do_logic(virtual_call_addr, register_vtable, offset)
 except:
-    print "Error! at BP address: 0x%08x", idc.GetRegValue("eip")
+    print("Error! at BP address: 0x%08x", idc.GetRegValue("eip"))
 
 #idc.add_cref(0x000000013FA72ABB, 0x000000013FA71177, idc.XREF_USER | idc.fl_F)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import idc
 import idautils
 import idaapi
@@ -9,7 +10,7 @@ from vtableAddress import REGISTERS
 
 def get_all_functions():
     for func in idautils.Functions():
-        print hex(func), idc.GetFunctionName(func)
+        print(hex(func), idc.GetFunctionName(func))
 
 
 def get_xref_code_to_func(func_addr):
