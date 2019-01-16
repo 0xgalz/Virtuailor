@@ -1,7 +1,7 @@
 # Virtuailor - IDAPython tool for C++ vtables reconstruction 
 
 
-Virtuailor is an IDAPython tool that reconstructs vtables for C++ code written for intel architechture and both 32bit and 64bit code.
+Virtuailor is an IDAPython tool that reconstructs vtables for C++ code written for intel architecture and both 32bit and 64bit code.
 The tool constructed from 2 parts, static and dynamic.
 
 The first is the static part, contains the following capabilities:
@@ -36,7 +36,7 @@ Now the breakpoints has been placed in your code and all you have to do is to ru
 
 In case you don't want/need the breakpoints anymore just go to the breakpoint list tab in IDA and delete the breakpoints as you like.
 
-It is also really important for me to note that this is the first version of the tool with both 32 anf 64 bit support, probably in some cases a small amount of brakpoints will be missed, in these cases please open an issue and contact me so I will be able to improve the code and help fixing it. Thank you in advanced for that :)
+It is also really important for me to note that this is the first version of the tool with both 32 anf 64 bit support, probably in some cases a small amount of breakpoints will be missed, in these cases please open an issue and contact me so I will be able to improve the code and help fixing it. Thank you in advanced for that :)
 
 ## Output and General Functions
 
@@ -73,7 +73,7 @@ The following gif shows the added Xrefs with their indirect function call:
 ## Former talks and lectures 
 
 The tool was presented in RECon brussels, Troopers and Warcon. 
-The presentaion could be found in the following link: https://www.youtube.com/watch?v=Xk75TM7NmtA
+The presentation could be found in the following link: https://www.youtube.com/watch?v=Xk75TM7NmtA
 
 ## Thanks
 
