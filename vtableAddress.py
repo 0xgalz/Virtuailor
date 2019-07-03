@@ -33,20 +33,19 @@ def get_con2_var_or_num(i_cnt, cur_addr):
     :param cur_addr: the current address in the memory
     :return: "success" string and the address of the vtable's location. if it fails it sends the reason and -1
     """
-    save_last_addr = cur_addr
     start_addr = idc.GetFunctionAttr(cur_addr, idc.FUNCATTR_START)
-    offset = 0
+    virt_call_addr = cur_addr
     cur_addr = idc.PrevHead(cur_addr)
-
     while cur_addr >= start_addr:
-        if idc.GetMnem(cur_addr)[:3] == "mov" and idc.GetOpnd(cur_addr, 0) == i_cnt:
+        if idc.GetMnem(cur_addr)[:3] == "mov" and idc.GetOpnd(cur_addr, 0) == i_cnt: #TODO lea ?
             opnd2 = idc.GetOpnd(cur_addr, 1)
             place = opnd2.find('+')
-            register = ''
-            offset = ''
             if place != -1: # if the function is not the first in the vtable
                 register = opnd2[opnd2.find('[') + 1: place]
-                offset = opnd2[place + 1: opnd2.find(']')]
+                if opnd2.find('*') == -1:
+                    offset = opnd2[place + 1: opnd2.find(']')]
+                else:
+                    offset = "*"
                 return register, offset, cur_addr
             else:
                 offset = "0"
@@ -56,9 +55,11 @@ def get_con2_var_or_num(i_cnt, cur_addr):
                     register = opnd2
                 return register, offset, cur_addr
         elif idc.GetMnem(cur_addr)[:4] == "call":
+            intr_func_name = idc.GetOpnd(cur_addr, 0)
             # In case the code has CFG -> ignores the function call before the virtual calls
-            if idc.GetOpnd(cur_addr, 0) != "cs:__guard_check_icall_fptr":
-                print("ERROR at address 0x%08x: the vtable pointer was assigned outside of function, could not place BP" % start_addr)
+            if "guard_check_icall_fptr" not in intr_func_name:
+                print("Warning! At address 0x%08x: The vtable assignment might be in another function (Maybe %s),\
+could not place BP." % (virt_call_addr, intr_func_name))
                 cur_addr = start_addr
         cur_addr = idc.PrevHead(cur_addr)
     return "out of the function", "-1", cur_addr

@@ -116,6 +116,25 @@ virtual_call_addr = str(<<<start_addr>>>)  # Offset from the beginning of its se
 #print "start_addr:", virtual_call_addr
 register_vtable = "<<<register_vtable>>>"
 offset = <<<offset>>>
+if offset == "*":
+    opnd2 = idc.GetOpnd(virtual_call_addr, 1)
+    reg_offset = 0
+    place = opnd2.find('+')
+    if place != -1:  # if the function is not the first in the vtable
+        sep = opnd2.find('*')
+        if sep != -1: # in case the offset is stored as a duplication of a register with a number
+            reg_offset = idc.GetRegValue(opnd2[place + 1: sep])
+        register = opnd2[opnd2.find('[') + 1: place]
+        if reg_offset:
+            offset = opnd2[sep + 1: opnd2.find(']')]
+            if offset.find('h') != -1:
+                int_offset = int(offset[:offset.find('h')], 16)
+            else:
+                int_offset = int(offset)
+            offset = int_offset * reg_offset
+
+        else:
+            offset = opnd2[place + 1: opnd2.find(']')]
 try:
     do_logic(virtual_call_addr, register_vtable, offset)
 except:
