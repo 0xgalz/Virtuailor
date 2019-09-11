@@ -13,7 +13,7 @@ The second is the dynamic part, contains the following capabilities:
 * Rename functions and vtables addresses.
 * Add structure offset to the assembly indirect calls. 
 * Add xref from indirect calls to their virtual functions(multiple xrefs).
-* For AArch64- tries to fix undifined vtables and related virtual functions for firmwares.
+* For AArch64- tries to fix undefined vtables and related virtual functions (support for firmwares).
 
 ## How to Use?
 
