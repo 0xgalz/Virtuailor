@@ -5,6 +5,20 @@
 #    * register_vtable -> The register who points to the vtable
 #    * offset -> The offset of the relevant function from the vtable base pointer
 
+def make_func(ea):
+    code_err = idc.MakeCode(ea)
+    func_err= idc.MakeFunction(ea)
+    return code_err, func_err
+
+def fix_arm_vtable(vfunc_addr):
+    if not is_code(vfunc_addr):
+        code_err, func_err = make_func(vfunc_addr)
+        #if code_err == 0:
+            #print "Failed to create code, at", hex(vfunc_addr)
+        #elif not func_err:
+            #print "Failed to create function, at". hex(vfunc_addr)
+
+
 
 def get_fixed_name_for_object(address, prefix=""):
     """
@@ -32,12 +46,12 @@ def get_vtable_and_vfunc_addr(is_brac, register_vtable, offset):
     if is_brac == -1: # check it in both start addr and bp if both are [] than anf just than change is_brac
         p_vtable_addr = idc.GetRegValue(register_vtable)
         pv_func_addr = p_vtable_addr + offset
-        v_func_addr = get_wide_dword(pv_func_addr)
+        v_func_addr = idc.read_dbg_qword(pv_func_addr)
         return p_vtable_addr, v_func_addr
     else:
-        p_vtable_addr = get_wide_dword(idc.GetRegValue(register_vtable))
+        p_vtable_addr = idc.read_dbg_qword(idc.GetRegValue(register_vtable))
         pv_func_addr = p_vtable_addr + offset
-        v_func_addr = get_wide_dword(pv_func_addr)
+        v_func_addr = idc.read_dbg_qword(pv_func_addr)
         return p_vtable_addr, v_func_addr
 
 def add_comment_to_struct_members(struct_id, vtable_func_offset, start_address):
@@ -56,24 +70,28 @@ def add_comment_to_struct_members(struct_id, vtable_func_offset, start_address):
 
 def add_all_functions_to_struct(start_address, struct_id, p_vtable_addr, offset):
     vtable_func_offset = 0
-    vtable_func_value = get_wide_dword(p_vtable_addr)
+    vtable_func_value = idc.read_dbg_qword(p_vtable_addr)
     # Add all the vtable's functions to the vtable struct
     while vtable_func_value != 0:
+        try:
+            fix_arm_vtable(vtable_func_value)
+        except:
+            pass
         v_func_name = GetFunctionName(vtable_func_value)
         if v_func_name == '':
-            vtable_func_value = get_wide_dword(vtable_func_value)
+            vtable_func_value = idc.read_dbg_qword(vtable_func_value)
             v_func_name = GetFunctionName(vtable_func_value)
             if v_func_name == '':
-                print "Error in adding functions to struct, at BP address::0x%08x" % start_address
+                print "Error in adding functions to struct, at BP address::", hex(start_address)
         # Change function name
         v_func_name = get_fixed_name_for_object(int(vtable_func_value), "vfunc_")
         idaapi.set_name(vtable_func_value, v_func_name, idaapi.SN_FORCE)
         # Add to structure
-        succ = idc.add_struc_member(struct_id, v_func_name, vtable_func_offset , FF_DWRD, -1, 4)
-        if offset == vtable_func_offset:
-            add_comment_to_struct_members(struct_id, vtable_func_offset, start_address)
-        vtable_func_offset += 4
-        vtable_func_value = get_wide_dword(p_vtable_addr + vtable_func_offset)
+        succ = idc.add_struc_member(struct_id, v_func_name, vtable_func_offset , FF_QWRD, -1, 8)
+        #if offset == vtable_func_offset:
+            #add_comment_to_struct_members(struct_id, vtable_func_offset, start_address)
+        vtable_func_offset += 8
+        vtable_func_value = idc.read_dbg_qword(p_vtable_addr + vtable_func_offset)
 
 
 def create_vtable_struct(start_address, vtable_name, p_vtable_addr, offset):
@@ -81,20 +99,20 @@ def create_vtable_struct(start_address, vtable_name, p_vtable_addr, offset):
     struct_id = add_struc(-1, struct_name, 0)
     if struct_id != idc.BADADDR:
         add_all_functions_to_struct(start_address, struct_id, p_vtable_addr, offset)
-        idc.OpStroff(idautils.DecodeInstruction(int(idc.GetRegValue("eip"))), 1, struct_id)
+        idc.OpStroff(idautils.DecodeInstruction(int(idc.GetRegValue("pc"))), 1, struct_id)
     else:
         struct_id = idc.GetStrucIdByName(struct_name)
         # Checks if the struct exists, in this case the function offset will be added to the struct
         if struct_id != idc.BADADDR:
-            idc.OpStroff(idautils.DecodeInstruction(int(idc.GetRegValue("eip"))), 1, struct_id)
+            idc.OpStroff(idautils.DecodeInstruction(int(idc.GetRegValue("pc"))), 1, struct_id)
         else:
             print "Failed to create struct: " +  struct_name
 
 def do_logic(virtual_call_addr, register_vtable, offset):
     # Checks if the assignment was beRef or byVal
-    is_brac_assign = idc.GetOpnd(int(idc.GetRegValue("eip")), 1).find('[')
-    # Checks if the assignment was beRef or byVal
-    call_addr = int(virtual_call_addr) + SegStart(int(idc.GetRegValue("eip")))
+    is_brac_assign = idc.GetOpnd(int(idc.GetRegValue("pc")), 1).find('[')
+    # Checks if the assignment was oobeRef or byVal
+    call_addr = int(virtual_call_addr) + SegStart(int(idc.GetRegValue("pc")))
     is_brac_call = idc.GetOpnd(call_addr, 0).find('[')
     is_brac = -1
     if is_brac_assign != -1 and is_brac_call != -1:
@@ -108,7 +126,10 @@ def do_logic(virtual_call_addr, register_vtable, offset):
     vtable_name = get_fixed_name_for_object(p_vtable_addr, "vtable_")
     idaapi.set_name(p_vtable_addr, vtable_name, idaapi.SN_FORCE)
     # Add xref of the virtual call
-    idc.add_cref(call_addr, v_func_addr, idc.XREF_USER | idc.fl_F)
+    try:
+        idc.add_cref(int(virtual_call_addr) , v_func_addr, idc.XREF_USER)
+    except:
+        print "Logging - xref to function at address:", hex(v_func_addr), ", from:", hex(v_func_addr) 
     # create the vtable struct
     create_vtable_struct(int(virtual_call_addr), vtable_name, p_vtable_addr, offset)
 
@@ -127,8 +148,8 @@ if offset == "*":
         register = opnd2[opnd2.find('[') + 1: place]
         if reg_offset:
             offset = opnd2[sep + 1: opnd2.find(']')]
-            if offset.find('h') != -1:
-                int_offset = int(offset[:offset.find('h')], 16)
+            if offset.find('0x') != -1:
+                int_offset = int(offset[offset.find('0x') +2:], 16)
             else:
                 int_offset = int(offset)
             offset = int_offset * reg_offset
@@ -138,6 +159,4 @@ if offset == "*":
 try:
     do_logic(virtual_call_addr, register_vtable, offset)
 except:
-    print "Error! at BP address: 0x%08x", idc.GetRegValue("eip")
-
-#idc.add_cref(0x000000013FA72ABB, 0x000000013FA71177, idc.XREF_USER | idc.fl_F)
+    print "Error! at BP address:", hex(idc.GetRegValue("pc"))

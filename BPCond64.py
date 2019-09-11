@@ -64,7 +64,7 @@ def add_all_functions_to_struct(start_address, struct_id, p_vtable_addr, offset)
             vtable_func_value = idc.read_dbg_qword(vtable_func_value)
             v_func_name = GetFunctionName(vtable_func_value)
             if v_func_name == '':
-                print "Error in adding functions to struct, at BP address::", start_address
+                print "Error in adding functions to struct, at BP address::", hex(start_address)
         # Change function name
         v_func_name = get_fixed_name_for_object(int(vtable_func_value), "vfunc_")
         idaapi.set_name(vtable_func_value, v_func_name, idaapi.SN_FORCE)
@@ -110,7 +110,7 @@ def do_logic(virtual_call_addr, register_vtable, offset):
     # Add xref of the virtual call
     idc.add_cref(call_addr, v_func_addr, idc.XREF_USER | idc.fl_F)
     # create the vtable struct
-    create_vtable_struct(virtual_call_addr, vtable_name, p_vtable_addr, offset)
+    create_vtable_struct(int(virtual_call_addr), vtable_name, p_vtable_addr, offset)
 
 virtual_call_addr = str(<<<start_addr>>>)  # Offset from the beginning of its segment
 #print "start_addr:", virtual_call_addr
