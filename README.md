@@ -1,7 +1,7 @@
 # Virtuailor - IDAPython tool for C++ vtables reconstruction 
 
 
-Virtuailor is an IDAPython tool that reconstructs vtables for C++ code written for intel architecture and both 32bit and 64bit code.
+Virtuailor is an IDAPython tool that reconstructs vtables for C++ code written for intel architecture, both 32bit and 64bit code and AArch64 (New!).
 The tool constructed from 2 parts, static and dynamic.
 
 The first is the static part, contains the following capabilities:
@@ -13,6 +13,7 @@ The second is the dynamic part, contains the following capabilities:
 * Rename functions and vtables addresses.
 * Add structure offset to the assembly indirect calls. 
 * Add xref from indirect calls to their virtual functions(multiple xrefs).
+* For AArch64- tries to fix undefined vtables and related virtual functions (support for firmware).
 
 ## How to Use?
 
@@ -32,11 +33,14 @@ if __name__ == '__main__':
 3. Press File->Run script... then go to Virtuailor folder and choose to run Main.py, You can see the following gif for a more clear and visual explanation.
 ![How to use](https://github.com/0xgalz/Virtuailor/blob/master/Images/howto.gif)
 
-Now the breakpoints has been placed in your code and all you have to do is to run your code with IDA debugger, do whatever actions you want and see how the vtables is being built! 
+Now the GUI will provide you an option to choose a range to target, in case you would like to target all the binary just press OK with the default values in the start and end addresses. 
+
+Afterwards the breakpoints will be placed in your code and all you have to do is to execute your code with IDA debugger, do whatever actions you want and see how the vtables is being built! 
+For AArch64 you can setup a remote gdb server and debug using the IDA debuggger.
 
 In case you don't want/need the breakpoints anymore just go to the breakpoint list tab in IDA and delete the breakpoints as you like.
 
-It is also really important for me to note that this is the first version of the tool with both 32 anf 64 bit support, probably in some cases a small amount of breakpoints will be missed, in these cases please open an issue and contact me so I will be able to improve the code and help fixing it. Thank you in advanced for that :)
+It is also really important for me to note that this is the second version of the tool with both 32 and 64 bit support and aarch64, probably in some cases a small amount of breakpoints will be missed, in these cases please open an issue and contact me so I will be able to improve the code and help fixing it. Thank you in advanced for that :)
 
 ## Output and General Functions
 
