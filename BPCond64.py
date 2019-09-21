@@ -108,7 +108,7 @@ def do_logic(virtual_call_addr, register_vtable, offset):
     vtable_name = get_fixed_name_for_object(p_vtable_addr, "vtable_")
     idaapi.set_name(p_vtable_addr, vtable_name, idaapi.SN_FORCE)
     # Add xref of the virtual call
-    idc.add_cref(call_addr, v_func_addr, idc.XREF_USER | idc.fl_F)
+    idc.add_cref(call_addr, v_func_addr, idc.XREF_USER)
     # create the vtable struct
     create_vtable_struct(int(virtual_call_addr), vtable_name, p_vtable_addr, offset)
 

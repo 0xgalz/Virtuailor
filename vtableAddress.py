@@ -88,9 +88,10 @@ def get_con2_var_or_num(i_cnt, cur_addr):
             intr_func_name = idc.GetOpnd(cur_addr, 0)
             # In case the code has CFG -> ignores the function call before the virtual calls
             if "guard_check_icall_fptr" not in intr_func_name:
-                # intr_func_name = idc.Demangle(intr_func_name, idc.GetLongPrm(idc.INF_SHORT_DN))
-                print("Warning! At address 0x%08x: The vtable assignment might be in another function (Maybe %s),\
-could not place BP." % (virt_call_addr, intr_func_name))
+                if "nullsub" not in intr_func_name:
+                    # intr_func_name = idc.Demangle(intr_func_name, idc.GetLongPrm(idc.INF_SHORT_DN))
+                    print("Warning! At address 0x%08x: The vtable assignment might be in another function (Maybe %s),"
+                          " could not place BP." % (virt_call_addr, intr_func_name))
                 cur_addr = start_addr
         cur_addr = idc.PrevHead(cur_addr)
     return "out of the function", "-1", cur_addr
@@ -101,8 +102,9 @@ could not place BP." % (virt_call_addr, intr_func_name))
 def get_bp_condition(start_addr, register_vtable, offset):
     arch, is_64 = get_processor_architecture()
     file_name = "BPCond.py"
-    if arch == "Intel" and is_64:
-        file_name = "BPCond64.py"
+    if arch == "Intel":
+        if is_64:
+            file_name = "BPCond64.py"
     else:
         file_name = "BPCondAarch64.py"
     condition_file = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), file_name)

@@ -51,5 +51,7 @@ if __name__ == '__main__':
     gui = GUI.VirtuailorBasicGUI(set_values, {'start': hex(start_addr_range)[2:-1], 'end': hex(end_addr_range)[2:-1]})
     gui.exec_()
     if gui.start_line.text != "banana":
+        print("Virtuailor - Started")
         add_bp_to_virtual_calls(int(gui.start_line.text(),16), int(gui.stop_line.text(), 16))
+        print("Virtuailor - Finished")
 
