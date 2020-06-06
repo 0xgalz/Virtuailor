@@ -17,6 +17,8 @@ The second is the dynamic part, contains the following capabilities:
 
 ## How to Use?
 
+>>Virtuailor now supports IDA versions from 7.0 to the newest version (7.5), if you are using IDA versions older than 7.4 you will need to switch to branch beforeIDA-7.4, master branch supports the newest version available (7.5).
+
 1. By default Virtuailor will look for virtual calls in ALL the addresses in the code.
 If you want to limit the code only for specific address range, no problem, just edit the *Main* file to add the range you want to target in the variables start_addr_range and end_addr_range:
 
