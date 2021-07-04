@@ -48,9 +48,9 @@ def add_comment_to_struct_members(struct_id, vtable_func_offset, start_address):
         if cur_cmt[:23] != "Was called from offset:":
             new_cmt = cur_cmt
         else:
-            new_cmt = cur_cmt + ", " + start_address
+            new_cmt = cur_cmt + ", " + str(start_address)
     else:
-        new_cmt = "Was called from offset: " + start_address
+        new_cmt = "Was called from offset: " + str(start_address)
     succ1 = idc.set_member_cmt(struct_id, vtable_func_offset, new_cmt, 1)
     return  succ1
 
